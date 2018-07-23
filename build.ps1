@@ -1,3 +1,3 @@
-dotnet restore .\TraceIdentifiers.sln
+dotnet restore .\Comminity.Extensions.Caching.sln
 
-dotnet build .\TraceIdentifiers.sln -c Release
+dotnet build .\Comminity.Extensions.Caching.sln -c Release
