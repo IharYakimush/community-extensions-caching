@@ -4,7 +4,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Comminity.Extensions.Caching
 {
-    public class CombinedCacheOptions
+    public class CombinedCacheOptions<TCacheInstance>
     {
         public IMemoryCache MemoryCache { get; set; }
 
@@ -19,5 +19,9 @@ namespace Comminity.Extensions.Caching
         public Func<object, byte[]> Serializer { get; set; } = null;
 
         public Func<byte[], object> Deserializer { get; set; } = null;
+
+        public Func<IMemoryCache, IMemoryCache<TCacheInstance>> GenericMemoryCacheFactory { get; } = mc => new MemoryCache<TCacheInstance>(mc);
+
+        public Func<IDistributedCache, IDistributedCache<TCacheInstance>> GenericDistributedCacheFactory { get; } = dc => new DistributedCache<TCacheInstance>(dc);
     }
 }

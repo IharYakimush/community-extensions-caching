@@ -5,7 +5,9 @@ VisualStudioVersion = 15.0.27703.2042
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comminity.Extensions.Caching", "Comminity.Extensions.Caching\Comminity.Extensions.Caching.csproj", "{13B7F2DD-0EC7-4861-A2A2-6E7067D46CBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comminity.Extensions.Caching.Tests", "Comminity.Extensions.Caching.Tests\Comminity.Extensions.Caching.Tests.csproj", "{398A5C23-E7F0-4376-9A13-E79F95F37067}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Comminity.Extensions.Caching.Tests", "Comminity.Extensions.Caching.Tests\Comminity.Extensions.Caching.Tests.csproj", "{398A5C23-E7F0-4376-9A13-E79F95F37067}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Comminity.Extensions.Caching.AppMetrics", "Comminity.Extensions.Caching.AppMetrics\Comminity.Extensions.Caching.AppMetrics.csproj", "{F2A86DF6-11F7-435E-A09C-ACBC1EAB2E1B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{398A5C23-E7F0-4376-9A13-E79F95F37067}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{398A5C23-E7F0-4376-9A13-E79F95F37067}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{398A5C23-E7F0-4376-9A13-E79F95F37067}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F2A86DF6-11F7-435E-A09C-ACBC1EAB2E1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F2A86DF6-11F7-435E-A09C-ACBC1EAB2E1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F2A86DF6-11F7-435E-A09C-ACBC1EAB2E1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F2A86DF6-11F7-435E-A09C-ACBC1EAB2E1B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

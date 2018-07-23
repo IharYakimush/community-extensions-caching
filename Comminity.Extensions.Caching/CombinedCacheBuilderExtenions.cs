@@ -6,19 +6,19 @@ namespace Comminity.Extensions.Caching
 {
     public static class CombinedCacheBuilderExtenions
     {
-        public static IServiceCollection AddCombinedCache<TCacheInstance>(this IServiceCollection services, Action<CombinedCacheOptions> settings)
+        public static IServiceCollection AddCombinedCache<TCacheInstance>(this IServiceCollection services, Action<CombinedCacheOptions<TCacheInstance>> settings)
         {
-            CombinedCacheOptions options = new CombinedCacheOptions();
+            CombinedCacheOptions<TCacheInstance> options = new CombinedCacheOptions<TCacheInstance>();
 
             settings?.Invoke(options);
 
             IMemoryCache<TCacheInstance> memoryCache = options.MemoryCache != null
-                ? (IMemoryCache<TCacheInstance>) new MemoryCache<TCacheInstance>(options.MemoryCache)
+                ? options?.GenericMemoryCacheFactory(options.MemoryCache) ?? new MemoryCache<TCacheInstance>(options.MemoryCache)
                 : new NullMemoryCache<TCacheInstance>();
             services.TryAddSingleton<IMemoryCache<TCacheInstance>>(memoryCache);
 
             IDistributedCache<TCacheInstance> distributedCache = options.DistributedCache != null
-                ? (IDistributedCache<TCacheInstance>)new DistributedCache<TCacheInstance>(options.DistributedCache)
+                ? options?.GenericDistributedCacheFactory(options.DistributedCache) ?? new DistributedCache<TCacheInstance>(options.DistributedCache)
                 : new NullDistributedCache<TCacheInstance>();
 
             services.TryAddSingleton<IMemoryCache<TCacheInstance>>(memoryCache);
