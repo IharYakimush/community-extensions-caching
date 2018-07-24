@@ -14,17 +14,18 @@ namespace Comminity.Extensions.Caching
             IMemoryCache <TCacheInstance> memoryCache = new NullMemoryCache<TCacheInstance>();
             if (options.MemoryCache != null)
             {
-                memoryCache = new MemoryCache<TCacheInstance>(options.MemoryCache);
-                memoryCache = options?.MemoryCacheWrapperFactory(memoryCache) ?? memoryCache;
+                memoryCache = options.MemoryCacheWrapperFactory?.Invoke(options.MemoryCache) ??
+                              new MemoryCache<TCacheInstance>(options.MemoryCache);
             }
             services.TryAddSingleton(memoryCache);
 
-            IDistributedCache<TCacheInstance> distributedCache = new NullDistributedCache<TCacheInstance>();
+            IDistributedObjectCache<TCacheInstance> distributedCache = new NullDistributedObjectCache<TCacheInstance>();
             if (options.DistributedCache != null)
             {
-                distributedCache = new DistributedCache<TCacheInstance>(options.DistributedCache);
-                distributedCache = options?.DistributedCacheWrapperFactory(distributedCache) ?? distributedCache;
-            }                
+                distributedCache = options.DistributedCacheWrapperFactory?.Invoke(options.DistributedCache) ??
+                                   new DistributedObjectCache<TCacheInstance>(options.DistributedCache);
+            }
+
             services.TryAddSingleton(distributedCache);
 
             CombinedCache<TCacheInstance> combinedCache = new CombinedCache<TCacheInstance>(memoryCache, distributedCache)
@@ -44,5 +45,5 @@ namespace Comminity.Extensions.Caching
 
             return services;
         }        
-    }
+    }    
 }

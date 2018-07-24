@@ -7,43 +7,43 @@ namespace Comminity.Extensions.Caching
 {
     public class DistributedCache<TCacheInstance> : IDistributedCache<TCacheInstance>
     {
-        public byte[] Get(string key)
+        public virtual byte[] Get(string key)
         {
             return _inner.Get(key);
         }
 
-        public Task<byte[]> GetAsync(string key, CancellationToken token = new CancellationToken())
+        public virtual Task<byte[]> GetAsync(string key, CancellationToken token = new CancellationToken())
         {
             return _inner.GetAsync(key, token);
         }
 
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+        public virtual void Set(string key, byte[] value, DistributedCacheEntryOptions options)
         {
             _inner.Set(key, value, options);
         }
 
-        public Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options,
+        public virtual Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options,
             CancellationToken token = new CancellationToken())
         {
             return _inner.SetAsync(key, value, options, token);
         }
 
-        public void Refresh(string key)
+        public virtual void Refresh(string key)
         {
             _inner.Refresh(key);
         }
 
-        public Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
+        public virtual Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
         {
             return _inner.RefreshAsync(key, token);
         }
 
-        public void Remove(string key)
+        public virtual void Remove(string key)
         {
             _inner.Remove(key);
         }
 
-        public Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
+        public virtual Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
         {
             return _inner.RemoveAsync(key, token);
         }

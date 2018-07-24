@@ -7,28 +7,47 @@ namespace Comminity.Extensions.Caching
 {
     public class DistributedObjectCache<TCacheInstance> : IDistributedObjectCache<TCacheInstance>
     {
-        
-        public void Refresh(string key)
+        public async Task<TObject> GetOrSetAsync<TObject>(string key, Func<Task<TObject>> valueFactory, DistributedCacheEntryOptions options,
+            CancellationToken token = default(CancellationToken), Func<TObject, byte[]> serialize = null, Func<byte[], TObject> deserialize = null) 
+            where TObject : class
+        {
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            if (valueFactory == null) throw new ArgumentNullException(nameof(valueFactory));
+            if (options == null) throw new ArgumentNullException(nameof(options));
+
+            TObject value = await this.GetAsync(key, token, deserialize);
+
+            if (value == null)
+            {
+                value = await valueFactory();
+
+                await this.SetAsync(key, value, options, token, serialize);
+            }
+
+            return value;
+        }
+
+        public virtual void Refresh(string key)
         {
             _inner.Refresh(key);
         }
 
-        public Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
+        public virtual Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
         {
             return _inner.RefreshAsync(key, token);
         }
 
-        public void Remove(string key)
+        public virtual void Remove(string key)
         {
             _inner.Remove(key);
         }
 
-        public Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
+        public virtual Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
         {
             return _inner.RemoveAsync(key, token);
         }
 
-        public TObject Get<TObject>(string key, Func<byte[], TObject> deserialize = null)
+        public virtual TObject Get<TObject>(string key, Func<byte[], TObject> deserialize = null) where TObject : class
         {
             byte[] data = this._inner.Get(key);
 
@@ -66,14 +85,14 @@ namespace Comminity.Extensions.Caching
             return Defaults.Serializer(value);
         }
 
-        public async Task<TObject> GetAsync<TObject>(string key, CancellationToken token = default(CancellationToken), Func<byte[], TObject> deserialize = null)
+        public virtual async Task<TObject> GetAsync<TObject>(string key, CancellationToken token = default(CancellationToken), Func<byte[], TObject> deserialize = null) where TObject : class
         {
             byte[] data = await this._inner.GetAsync(key, token);
 
             return HandleGet(data, deserialize);
         }
 
-        public void Set<TObject>(string key, TObject value, DistributedCacheEntryOptions options, Func<TObject, byte[]> serialize = null)
+        public virtual void Set<TObject>(string key, TObject value, DistributedCacheEntryOptions options, Func<TObject, byte[]> serialize = null)
             where TObject : class
         {
             byte[] data = HandleSet(value, serialize);
@@ -81,7 +100,7 @@ namespace Comminity.Extensions.Caching
             this._inner.Set(key, data, options);
         }
 
-        public async Task SetAsync<TObject>(string key, TObject value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken), Func<TObject, byte[]> serialize = null)
+        public virtual async Task SetAsync<TObject>(string key, TObject value, DistributedCacheEntryOptions options, CancellationToken token = default(CancellationToken), Func<TObject, byte[]> serialize = null)
             where TObject : class
         {
             byte[] data = HandleSet(value, serialize);

@@ -1,81 +1,60 @@
 ﻿using System;
 using System.Linq;
-using System.Timers;
+using System.Threading.Tasks;
 using App.Metrics;
-using App.Metrics.Gauge;
-using App.Metrics.Meter;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Comminity.Extensions.Caching.AppMetrics
 {
-    public class MemoryCacheWithMetrics<TCacheInstance> : IMemoryCache<TCacheInstance>
+    public class MemoryCacheWithMetrics<TCacheInstance> : MemoryCache<TCacheInstance>
     {
-        private static MeterOptions Hit = new MeterOptions {
-            MeasurementUnit = Unit.Calls,
-            Context = "Cache.Memory",
-            Name = "h_count"
-        };
-
-        private static MeterOptions Total = new MeterOptions
+        protected MetricsHelper<TCacheInstance> Helper { get; }
+        public MemoryCacheWithMetrics(IMemoryCache inner, IMetrics metrics, CacheMetrics allowedMetrics)
+            : base(inner)
         {
-            MeasurementUnit = Unit.Calls,
-            Context = "Cache.Memory",
-            Name = "t_count"
-        };
-
-        private static GaugeOptions HitRatio = new GaugeOptions
-        {
-            MeasurementUnit = Unit.Calls,
-            Context = "Cache.Memory",
-            Name = "h_ratio"
-        };
-
-        private static MetricTags MetricsTags { get; } = new MetricTags("inst",
-            typeof(TCacheInstance).Name.Split('.').Last());
-
-        private readonly IMemoryCache<TCacheInstance> _inner;
-        private readonly IMetrics _metrics;
-        private readonly Timer timer = new Timer() { Interval = 30000 };
-
-        public MemoryCacheWithMetrics(IMemoryCache<TCacheInstance> inner, IMetrics metrics)
-        {
-            this._inner = inner ?? throw new ArgumentNullException(nameof(inner));
-            this._metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));            
-            timer.Elapsed += Timer_Elapsed;
-            timer.Start();
+            this.Helper = new MetricsHelper<TCacheInstance>(metrics, allowedMetrics);
+            if (allowedMetrics.HasFlag(CacheMetrics.HitRatio))
+            {
+                this.Helper.MetricsObj.RegisterOneMinuteRate(
+                    Metrics.Memory.HitRatio,
+                    Metrics.Memory.HitCount,
+                    Metrics.Memory.TotalCount);
+            }
         }
 
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        public override bool TryGetValue(object key, out object value)
         {
-            _metrics.Measure.Gauge.SetValue(HitRatio, () => new HitRatioGauge(_metrics.Provider.Meter.Instance(Hit), _metrics.Provider.Meter.Instance(Total), m => m.OneMinuteRate));
-        }
+            bool result = base.TryGetValue(key, out value);
 
-        public void Dispose()
-        {
-            _inner.Dispose();
-            this.timer.Dispose();
-        }
-
-        public bool TryGetValue(object key, out object value)
-        {
-            bool result = _inner.TryGetValue(key, out value);
-            this._metrics.Measure.Meter.Mark(Total, MetricsTags);
+            this.Helper.MarkTotalCount(Metrics.Memory.TotalCount);
+            
             if (result)
             {
-                this._metrics.Measure.Meter.Mark(Hit, MetricsTags);
+                this.Helper.MarkHitCount(Metrics.Memory.HitCount);
             }
             
             return result;
         }
 
-        public ICacheEntry CreateEntry(object key)
+        public override Task<TResult> GetOrAddAsync<TResult>(
+            string key,
+            Func<Task<TResult>> factory,
+            MemoryCacheEntryOptions options)
         {
-            return _inner.CreateEntry(key);
-        }
+            Func<Task<TResult>> factoryWithMeasurement = factory;
 
-        public void Remove(object key)
-        {
-            _inner.Remove(key);
+            if (this.Helper.AllowedMetrics.HasFlag(CacheMetrics.FactoryTime))
+            {
+                factoryWithMeasurement = async () =>
+                {
+                    using (var timer = this.Helper.GetFactoryTimer(Metrics.Memory.FactoryTimer))
+                    {
+                        return await factory();
+                    }
+                };
+            }
+
+            return base.GetOrAddAsync(key, factoryWithMeasurement, options);
         }
     }
 }

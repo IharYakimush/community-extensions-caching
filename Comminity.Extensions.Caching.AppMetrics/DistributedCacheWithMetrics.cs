@@ -1,76 +1,53 @@
 ﻿using App.Metrics;
-using App.Metrics.Gauge;
-using App.Metrics.Meter;
 using App.Metrics.Timer;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace Comminity.Extensions.Caching.AppMetrics
 {
-    public class DistributedCacheWithMetrics<TCacheInstance> : IDistributedCache<TCacheInstance>
+    public class DistributedCacheWithMetrics<TCacheInstance> : DistributedCache<TCacheInstance>
     {
-        private static MetricTags MetricsTags { get; } = new MetricTags("inst",
-             typeof(TCacheInstance).Name.Split('.').Last());
+        protected MetricsHelper<TCacheInstance> Helper { get; }
 
-        public static TimerOptions ReadTimer { get; } =
-            new TimerOptions
-            {
-                Name = "r_time",
-                MeasurementUnit = Unit.Requests,
-                RateUnit = TimeUnit.Milliseconds,
-                Context = "Cache.Distributed"
-            };
-
-        public static TimerOptions WriteTimer { get; } =
-            new TimerOptions
-            {
-                Name = "w_time",
-                MeasurementUnit = Unit.Requests,
-                RateUnit = TimeUnit.Milliseconds,
-                Context = "Cache.Distributed"
-            };
-
-        private static MeterOptions Hit = new MeterOptions
+        public DistributedCacheWithMetrics(IDistributedCache inner, IMetrics metrics,
+            CacheMetrics allowedMetrics) : base(inner)
         {
-            MeasurementUnit = Unit.Calls,
-            Context = "Cache.Distributed",
-            Name = "h_count"
-        };
+            this.Helper = new MetricsHelper<TCacheInstance>(metrics, allowedMetrics);
 
-        private static GaugeOptions HitRatio = new GaugeOptions
-        {
-            MeasurementUnit = Unit.Calls,
-            Context = "Cache.Distributed",
-            Name = "h_ratio"
-        };
-
-        public static TimerOptions FactoryTimer { get; } =
-            new TimerOptions
+            if (allowedMetrics.HasFlag(CacheMetrics.HitRatio))
             {
-                Name = "f_time",
-                MeasurementUnit = Unit.Requests,
-                RateUnit = TimeUnit.Milliseconds,
-                Context = "Cache.Distributed"
-            };
+                this.Helper.MetricsObj.RegisterOneMinuteRate(
+                    Metrics.Distributed.HitRatio,
+                    Metrics.Distributed.HitCount,
+                    Metrics.Distributed.TotalCount);
+            }
 
-        public byte[] Get(string key)
+            if (allowedMetrics.HasFlag(CacheMetrics.ErrorRatio))
+            {
+                this.Helper.MetricsObj.RegisterOneMinuteRate(
+                    Metrics.Distributed.ErrorRatio,
+                    Metrics.Distributed.ErrorCount,
+                    Metrics.Distributed.TotalCount);
+            }
+        }
+
+        public override byte[] Get(string key)
         {
-            using (var timer = this._metrics.Measure.Timer.Time(ReadTimer, MetricsTags))
+            this.Helper.MarkTotalCount(Metrics.Distributed.TotalCount);
+            TimerContext timer = this.Helper.GetReadTimer(Metrics.Distributed.ReadTimer);
+
+            using (timer)
             {
                 try
                 {
-                    byte[] result = this._inner.Get(key);
+                    byte[] result = base.Get(key);
 
                     if (result != null)
                     {
                         timer.TrackUserValue("hit");
-                        this._metrics.Measure.Meter.Mark(Hit, MetricsTags);
+                        this.Helper.MarkHitCount(Metrics.Distributed.HitCount);
                     }
                     else
                     {
@@ -82,22 +59,27 @@ namespace Comminity.Extensions.Caching.AppMetrics
                 catch
                 {
                     timer.TrackUserValue("error");
+                    this.Helper.MarkErrorCount(Metrics.Distributed.ErrorCount);
                     throw;
                 }
             }
         }
 
-        public async Task<byte[]> GetAsync(string key, CancellationToken token = new CancellationToken())
+        public override async Task<byte[]> GetAsync(string key, CancellationToken token = new CancellationToken())
         {
-            using (var timer = this._metrics.Measure.Timer.Time(ReadTimer, MetricsTags))
+            this.Helper.MarkTotalCount(Metrics.Distributed.TotalCount);
+            TimerContext timer = this.Helper.GetReadTimer(Metrics.Distributed.ReadTimer);
+
+            using (timer)
             {
                 try
                 {
-                    byte[] result = await _inner.GetAsync(key, token);
+                    byte[] result = await base.GetAsync(key, token);
 
                     if (result != null)
                     {
                         timer.TrackUserValue("hit");
+                        this.Helper.MarkHitCount(Metrics.Distributed.HitCount);
                     }
                     else
                     {
@@ -105,6 +87,26 @@ namespace Comminity.Extensions.Caching.AppMetrics
                     }
 
                     return result;
+                }
+                catch
+                {
+                    timer.TrackUserValue("error");
+                    this.Helper.MarkErrorCount(Metrics.Distributed.ErrorCount);
+                    throw;
+                }
+            }
+        }
+
+        public override void Set(string key, byte[] value, DistributedCacheEntryOptions options)
+        {
+            TimerContext timer = this.Helper.GetWriteTimer(Metrics.Distributed.WriteTimer);
+
+            using (timer)
+            {
+                try
+                {
+                    base.Set(key, value, options);
+                    timer.TrackUserValue("ok");
                 }
                 catch
                 {
@@ -114,32 +116,16 @@ namespace Comminity.Extensions.Caching.AppMetrics
             }
         }
 
-        public void Set(string key, byte[] value, DistributedCacheEntryOptions options)
-        {
-            using (var timer = this._metrics.Measure.Timer.Time(WriteTimer, MetricsTags))
-            {
-                try
-                {
-                    _inner.Set(key, value, options);
-                    timer.TrackUserValue("ok");
-                }
-                catch
-                {
-                    timer.TrackUserValue("error");
-                    throw;
-                }
-                
-            }
-        }
-
-        public async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options,
+        public override async Task SetAsync(string key, byte[] value, DistributedCacheEntryOptions options,
             CancellationToken token = new CancellationToken())
         {
-            using (var timer = this._metrics.Measure.Timer.Time(WriteTimer, MetricsTags))
+            TimerContext timer = this.Helper.GetWriteTimer(Metrics.Distributed.WriteTimer);
+
+            using (timer)
             {
                 try
                 {
-                    await _inner.SetAsync(key, value, options, token);
+                    await base.SetAsync(key, value, options, token);
                     timer.TrackUserValue("ok");
                 }
                 catch
@@ -147,44 +133,7 @@ namespace Comminity.Extensions.Caching.AppMetrics
                     timer.TrackUserValue("error");
                     throw;
                 }
-
             }
-        }
-
-        public void Refresh(string key)
-        {
-            _inner.Refresh(key);
-        }
-
-        public Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
-        {
-            return _inner.RefreshAsync(key, token);
-        }
-
-        public void Remove(string key)
-        {
-            _inner.Remove(key);
-        }
-
-        public Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
-        {
-            return _inner.RemoveAsync(key, token);
-        }
-
-        private readonly IDistributedCache<TCacheInstance> _inner;
-        private readonly IMetrics _metrics;
-        private readonly System.Timers.Timer timer = new System.Timers.Timer() { Interval = 30000 };
-
-        public DistributedCacheWithMetrics(IDistributedCache<TCacheInstance> inner, IMetrics metrics)
-        {
-            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-            this._metrics = metrics ?? throw new ArgumentNullException(nameof(metrics)); timer.Elapsed += Timer_Elapsed;
-            timer.Start();
-        }
-
-        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            _metrics.Measure.Gauge.SetValue(HitRatio, () => new HitRatioGauge(_metrics.Provider.Meter.Instance(Hit), _metrics.Provider.Timer.Instance(ReadTimer), m => m.OneMinuteRate));
-        }
+        }              
     }
 }

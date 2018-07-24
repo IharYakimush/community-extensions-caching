@@ -8,7 +8,7 @@ namespace Comminity.Extensions.Caching
     {
         IMemoryCache<TCacheInstance> MemoryCache { get; }
 
-        IDistributedCache<TCacheInstance> DistributedCache { get; }
+        IDistributedObjectCache<TCacheInstance> DistributedCache { get; }
 
         DistributedCacheEntryOptions DefaultDistributedCacheEntryOptions { get; }
 

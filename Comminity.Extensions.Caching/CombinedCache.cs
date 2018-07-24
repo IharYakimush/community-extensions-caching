@@ -6,13 +6,13 @@ namespace Comminity.Extensions.Caching
 {
     public class CombinedCache<TCacheInstance> : ICombinedCache<TCacheInstance>
     {
-        public CombinedCache(IMemoryCache<TCacheInstance> memoryCache, IDistributedCache<TCacheInstance> distributedCache)
+        public CombinedCache(IMemoryCache<TCacheInstance> memoryCache, IDistributedObjectCache<TCacheInstance> distributedCache)
         {
             MemoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             DistributedCache = distributedCache ?? throw new ArgumentNullException(nameof(distributedCache));
         }
         public IMemoryCache<TCacheInstance> MemoryCache { get; }
-        public IDistributedCache<TCacheInstance> DistributedCache { get; }
+        public IDistributedObjectCache<TCacheInstance> DistributedCache { get; }
         public DistributedCacheEntryOptions DefaultDistributedCacheEntryOptions { get; set; }
 
         public MemoryCacheEntryOptions DefaultMemoryCacheEntryOptions { get; set; }
