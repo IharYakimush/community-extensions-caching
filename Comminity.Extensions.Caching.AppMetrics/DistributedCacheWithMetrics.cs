@@ -1,4 +1,6 @@
 ﻿using App.Metrics;
+using App.Metrics.Gauge;
+using App.Metrics.Meter;
 using App.Metrics.Timer;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
@@ -7,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 
 namespace Comminity.Extensions.Caching.AppMetrics
 {
@@ -33,6 +36,20 @@ namespace Comminity.Extensions.Caching.AppMetrics
                 Context = "Cache.Distributed"
             };
 
+        private static MeterOptions Hit = new MeterOptions
+        {
+            MeasurementUnit = Unit.Calls,
+            Context = "Cache.Distributed",
+            Name = "h_count"
+        };
+
+        private static GaugeOptions HitRatio = new GaugeOptions
+        {
+            MeasurementUnit = Unit.Calls,
+            Context = "Cache.Distributed",
+            Name = "h_ratio"
+        };
+
         public static TimerOptions FactoryTimer { get; } =
             new TimerOptions
             {
@@ -53,6 +70,7 @@ namespace Comminity.Extensions.Caching.AppMetrics
                     if (result != null)
                     {
                         timer.TrackUserValue("hit");
+                        this._metrics.Measure.Meter.Mark(Hit, MetricsTags);
                     }
                     else
                     {
@@ -155,11 +173,18 @@ namespace Comminity.Extensions.Caching.AppMetrics
 
         private readonly IDistributedCache<TCacheInstance> _inner;
         private readonly IMetrics _metrics;
+        private readonly System.Timers.Timer timer = new System.Timers.Timer() { Interval = 30000 };
 
         public DistributedCacheWithMetrics(IDistributedCache<TCacheInstance> inner, IMetrics metrics)
         {
             _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-            this._metrics = metrics ?? throw new ArgumentNullException(nameof(metrics));
+            this._metrics = metrics ?? throw new ArgumentNullException(nameof(metrics)); timer.Elapsed += Timer_Elapsed;
+            timer.Start();
+        }
+
+        private void Timer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            _metrics.Measure.Gauge.SetValue(HitRatio, () => new HitRatioGauge(_metrics.Provider.Meter.Instance(Hit), _metrics.Provider.Timer.Instance(ReadTimer), m => m.OneMinuteRate));
         }
     }
 }

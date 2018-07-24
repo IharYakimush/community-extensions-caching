@@ -4,19 +4,20 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <SignAssembly>true</SignAssembly>
     <AssemblyOriginatorKeyFile>sgn.snk</AssemblyOriginatorKeyFile>
-    <Version>1.0.1</Version>
     <Authors>IharYakimush</Authors>
-    <Company />
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <Description>Add App.Metrics to combined cache</Description>
     <PackageLicenseUrl>https://github.com/IharYakimush/community-extensions-caching/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/IharYakimush/community-extensions-caching</PackageProjectUrl>
-    <PackageTags>combinedcache cache performance metrics</PackageTags>
+    <PackageTags>combinedcache redis cache</PackageTags>
+    <Description>Add redis distributed cache to combined cache</Description>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="App.Metrics.Core" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,18 +11,21 @@ namespace Comminity.Extensions.Caching
             CombinedCacheOptions<TCacheInstance> options = new CombinedCacheOptions<TCacheInstance>();
 
             settings?.Invoke(options);
+            IMemoryCache <TCacheInstance> memoryCache = new NullMemoryCache<TCacheInstance>();
+            if (options.MemoryCache != null)
+            {
+                memoryCache = new MemoryCache<TCacheInstance>(options.MemoryCache);
+                memoryCache = options?.MemoryCacheWrapperFactory(memoryCache) ?? memoryCache;
+            }
+            services.TryAddSingleton(memoryCache);
 
-            IMemoryCache<TCacheInstance> memoryCache = options.MemoryCache != null
-                ? options?.GenericMemoryCacheFactory(options.MemoryCache) ?? new MemoryCache<TCacheInstance>(options.MemoryCache)
-                : new NullMemoryCache<TCacheInstance>();
-            services.TryAddSingleton<IMemoryCache<TCacheInstance>>(memoryCache);
-
-            IDistributedCache<TCacheInstance> distributedCache = options.DistributedCache != null
-                ? options?.GenericDistributedCacheFactory(options.DistributedCache) ?? new DistributedCache<TCacheInstance>(options.DistributedCache)
-                : new NullDistributedCache<TCacheInstance>();
-
-            services.TryAddSingleton<IMemoryCache<TCacheInstance>>(memoryCache);
-            services.TryAddSingleton<IDistributedCache<TCacheInstance>>(distributedCache);
+            IDistributedCache<TCacheInstance> distributedCache = new NullDistributedCache<TCacheInstance>();
+            if (options.DistributedCache != null)
+            {
+                distributedCache = new DistributedCache<TCacheInstance>(options.DistributedCache);
+                distributedCache = options?.DistributedCacheWrapperFactory(distributedCache) ?? distributedCache;
+            }                
+            services.TryAddSingleton(distributedCache);
 
             CombinedCache<TCacheInstance> combinedCache = new CombinedCache<TCacheInstance>(memoryCache, distributedCache)
             {
@@ -40,6 +43,6 @@ namespace Comminity.Extensions.Caching
             services.TryAddSingleton<ICombinedCache<TCacheInstance>>(combinedCache);
 
             return services;
-        }
+        }        
     }
 }

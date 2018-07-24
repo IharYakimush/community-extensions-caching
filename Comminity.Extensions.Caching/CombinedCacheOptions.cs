@@ -20,8 +20,8 @@ namespace Comminity.Extensions.Caching
 
         public Func<byte[], object> Deserializer { get; set; } = null;
 
-        public Func<IMemoryCache, IMemoryCache<TCacheInstance>> GenericMemoryCacheFactory { get; } = mc => new MemoryCache<TCacheInstance>(mc);
+        public Func<IMemoryCache<TCacheInstance>, IMemoryCache<TCacheInstance>> MemoryCacheWrapperFactory { get; set; } = null;
 
-        public Func<IDistributedCache, IDistributedCache<TCacheInstance>> GenericDistributedCacheFactory { get; } = dc => new DistributedCache<TCacheInstance>(dc);
+        public Func<IDistributedCache<TCacheInstance>, IDistributedCache<TCacheInstance>> DistributedCacheWrapperFactory { get; set; } = null;
     }
 }

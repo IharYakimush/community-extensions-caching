@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  redis:
+    image: redis:4.0.5-alpine
+    command: ["redis-server"]
+
+  comminity.extensions.caching.sample:
+    image: ${DOCKER_REGISTRY}comminityextensionscachingsample
+    build:
+      context: .
+      dockerfile: Comminity.Extensions.Caching.Sample/Dockerfile
