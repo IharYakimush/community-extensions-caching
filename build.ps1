@@ -1,3 +1,3 @@
-dotnet restore .\Comminity.Extensions.Caching.sln
+dotnet restore .\Community.Extensions.Caching.sln
 
-dotnet build .\Comminity.Extensions.Caching.sln -c Release
+dotnet build .\Community.Extensions.Caching.sln -c Release
