@@ -19,7 +19,8 @@ namespace Comminity.Extensions.Caching.AppMetrics
                 this.Helper.MetricsObj.RegisterOneMinuteRate(
                     Metrics.Memory.HitRatio,
                     Metrics.Memory.HitCount,
-                    Metrics.Memory.TotalCount);
+                    Metrics.Memory.TotalCount,
+                    this.Helper.MetricsTags);
             }
         }
 

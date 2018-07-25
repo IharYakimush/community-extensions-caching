@@ -10,18 +10,20 @@ namespace Comminity.Extensions.Caching.AppMetrics
 {
     public static class Metrics
     {
-        private static readonly Timer Timer = new Timer { Interval = 60000 };
+        private static readonly Timer Timer = new Timer { Interval = 10000 };
 
-        private static readonly LinkedList<Tuple<IMetrics, GaugeOptions, MeterOptions, MeterOptions>> Ratios =
-            new LinkedList<Tuple<IMetrics, GaugeOptions, MeterOptions, MeterOptions>>();
+        private static readonly LinkedList<Tuple<IMetrics, GaugeOptions, MeterOptions, MeterOptions, MetricTags>> Ratios =
+            new LinkedList<Tuple<IMetrics, GaugeOptions, MeterOptions, MeterOptions, MetricTags>>();
 
-        public static IMetrics RegisterOneMinuteRate(this IMetrics metrics, GaugeOptions ratio, MeterOptions hit, MeterOptions total)
+        public static IMetrics RegisterOneMinuteRate(this IMetrics metrics, GaugeOptions ratio, MeterOptions hit, MeterOptions total, MetricTags tags)
         {
             if (ratio == null) throw new ArgumentNullException(nameof(ratio));
             if (hit == null) throw new ArgumentNullException(nameof(hit));
             if (total == null) throw new ArgumentNullException(nameof(total));
 
-            Ratios.AddLast(new Tuple<IMetrics, GaugeOptions, MeterOptions, MeterOptions>(metrics, ratio, hit, total));
+            Ratios.AddLast(
+                new Tuple<IMetrics, GaugeOptions, MeterOptions, MeterOptions, MetricTags>(metrics, ratio, hit, total,
+                    tags));
 
             if (!Timer.Enabled)
             {
@@ -42,9 +44,9 @@ namespace Comminity.Extensions.Caching.AppMetrics
             {
                 try
                 {
-                    ratio.Item1.Measure.Gauge.SetValue(ratio.Item2,
-                        () => new HitRatioGauge(ratio.Item1.Provider.Meter.Instance(ratio.Item3),
-                            ratio.Item1.Provider.Meter.Instance(ratio.Item4), m => m.OneMinuteRate));
+                    ratio.Item1.Measure.Gauge.SetValue(ratio.Item2,ratio.Item5,
+                        () => new HitPercentageGauge(ratio.Item1.Provider.Meter.Instance(ratio.Item3,ratio.Item5),
+                            ratio.Item1.Provider.Meter.Instance(ratio.Item4, ratio.Item5), m => m.OneMinuteRate));
                 }
                 catch
                 {
@@ -83,7 +85,7 @@ namespace Comminity.Extensions.Caching.AppMetrics
             {
                 MeasurementUnit = Unit.Calls,
                 Context = "Cache.Distributed",
-                Name = "h_ratio"
+                Name = "h_ratio_minute"
             };
 
             public static MeterOptions ErrorCount { get; } = new MeterOptions
@@ -97,7 +99,7 @@ namespace Comminity.Extensions.Caching.AppMetrics
             {
                 MeasurementUnit = Unit.Calls,
                 Context = "Cache.Distributed",
-                Name = "e_ratio"
+                Name = "e_ratio_minute"
             };
 
             public static MeterOptions TotalCount { get; } = new MeterOptions
@@ -137,7 +139,7 @@ namespace Comminity.Extensions.Caching.AppMetrics
             {
                 MeasurementUnit = Unit.Calls,
                 Context = "Cache.Memory",
-                Name = "h_ratio"
+                Name = "h_ratio_minute"
             };
 
             public static TimerOptions FactoryTimer { get; } =

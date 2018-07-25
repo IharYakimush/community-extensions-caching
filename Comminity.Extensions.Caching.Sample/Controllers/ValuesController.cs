@@ -8,7 +8,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Comminity.Extensions.Caching.Sample.Controllers
 {
-    [Route("/")]
+    [Route("/api/values")]
     [ApiController]
     public class ValuesController : ControllerBase
     {
@@ -31,22 +31,35 @@ namespace Comminity.Extensions.Caching.Sample.Controllers
         [HttpGet]
         public ActionResult<IEnumerable<string>> Get()
         {
-            string dateString = DateTime.UtcNow.ToLongDateString();
+            string dateString = DateTime.UtcNow.ToString("O");
             return new string[]
             {
-                this.mem.GetOrSetValue("v1", () => "v1mem-" + rnd.Next(1000000) + "-" + dateString,
+                "reload this page every 1 second.",
+                "v1 - same in memory and combined",
+                "v2 - same in distributed and combined",
+                "v3 - only in combined",
+                "/metrics",
+                "v1mem-" + this.mem.GetOrSetValue("v1", () => rnd.Next(1000000) + "-" + dateString,
                     new MemoryCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10)}),
 
-                this.dist.GetOrSetValue("v1", () => "v1dist-" + rnd.Next(1000000) + "-" + dateString,
+                "v1dist-" + this.dist.GetOrSetValue("v1", () => rnd.Next(1000000) + "-" + dateString,
                     new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)}),
 
-                this.comb.GetOrSetValue("v1", () => "v1comb-" + rnd.Next(1000000) + "-" + dateString,
+                "v2dist-" + this.dist.GetOrSetValue("v2", () => rnd.Next(1000000) + "-" + dateString,
+                    new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)}),
+
+                "v1comb-" + this.comb.GetOrSetValue("v1", () => rnd.Next(1000000) + "-" + dateString,
                     new MemoryCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10)},
                     new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)}),
 
-                this.comb.GetOrSetValue("v2", () => "v2comb-" + rnd.Next(1000000) + "-" + dateString,
-                    new MemoryCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(10)},
-                    new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)})
+                "v2comb-" + this.comb.GetOrSetValue("v2", () => rnd.Next(1000000) + "-" + dateString,
+                    new MemoryCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5)},
+                    new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)}),
+
+                "v3comb-" + this.comb.GetOrSetValue("v3", () => rnd.Next(1000000) + "-" + dateString,
+                    new MemoryCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(5)},
+                    new DistributedCacheEntryOptions {AbsoluteExpirationRelativeToNow = TimeSpan.FromSeconds(30)}
+                )
             };
         }
 

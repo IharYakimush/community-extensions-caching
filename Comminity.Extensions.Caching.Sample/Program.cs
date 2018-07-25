@@ -18,7 +18,8 @@ namespace Comminity.Extensions.Caching.Sample
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
+            WebHost.CreateDefaultBuilder(args).ConfigureMetricsWithDefaults(builder => builder.Build())
+                .UseMetricsEndpoints()
                 .UseStartup<Startup>();
     }
 }

@@ -22,7 +22,8 @@ namespace Comminity.Extensions.Caching.AppMetrics
                 this.Helper.MetricsObj.RegisterOneMinuteRate(
                     Metrics.Distributed.HitRatio,
                     Metrics.Distributed.HitCount,
-                    Metrics.Distributed.TotalCount);
+                    Metrics.Distributed.TotalCount,
+                    this.Helper.MetricsTags);
             }
 
             if (settings.AllowedCacheMetrics.HasFlag(CacheMetrics.ErrorRatio))
@@ -30,7 +31,8 @@ namespace Comminity.Extensions.Caching.AppMetrics
                 this.Helper.MetricsObj.RegisterOneMinuteRate(
                     Metrics.Distributed.ErrorRatio,
                     Metrics.Distributed.ErrorCount,
-                    Metrics.Distributed.TotalCount);
+                    Metrics.Distributed.TotalCount,
+                    this.Helper.MetricsTags);
             }
 
             options.OnGetError += Options_OnGetError;
