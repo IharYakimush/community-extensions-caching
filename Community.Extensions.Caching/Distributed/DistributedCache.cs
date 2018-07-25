@@ -18,8 +18,9 @@ namespace Community.Extensions.Caching.Distributed
 
         public virtual TObject GetValue<TObject>(string key) where TObject : class
         {
+            key = this.EnsureCorrectKey(key);
             try
-            {
+            {                
                 byte[] data = this._inner.Get(key);
 
                 return HandleGet<TObject>(data, this.Options.Deserializer);
@@ -41,6 +42,7 @@ namespace Community.Extensions.Caching.Distributed
 
         public virtual async Task<TObject> GetValueAsync<TObject>(string key, CancellationToken token = default(CancellationToken)) where TObject : class
         {
+            key = this.EnsureCorrectKey(key);
             try
             {
                 byte[] data = await this._inner.GetAsync(key, token);
@@ -63,7 +65,8 @@ namespace Community.Extensions.Caching.Distributed
         }
 
         public virtual void SetValue<TObject>(string key, TObject value, DistributedCacheEntryOptions options = null) where TObject : class
-        {            
+        {
+            key = this.EnsureCorrectKey(key);
             try
             {
                 byte[] data = HandleSet(value, this.Options.Serializer);
@@ -86,6 +89,7 @@ namespace Community.Extensions.Caching.Distributed
         public virtual async Task SetValueAsync<TObject>(string key, TObject value, DistributedCacheEntryOptions options = null,
             CancellationToken token = default(CancellationToken)) where TObject : class
         {
+            key = this.EnsureCorrectKey(key);
             try
             {
                 byte[] data = HandleSet(value, this.Options.Serializer);
@@ -109,6 +113,7 @@ namespace Community.Extensions.Caching.Distributed
             CancellationToken token = default(CancellationToken)) where TObject : class
         {
             if (valueFactory == null) throw new ArgumentNullException(nameof(valueFactory));
+            key = this.EnsureCorrectKey(key);
 
             TObject value = await this.GetValueAsync<TObject>(key, token);
 
@@ -125,6 +130,7 @@ namespace Community.Extensions.Caching.Distributed
         public virtual TObject GetOrSetValue<TObject>(string key, Func<TObject> valueFactory, DistributedCacheEntryOptions options = null) where TObject : class
         {
             if (valueFactory == null) throw new ArgumentNullException(nameof(valueFactory));
+            key = this.EnsureCorrectKey(key);
 
             TObject value = this.GetValue<TObject>(key);
 
@@ -140,6 +146,7 @@ namespace Community.Extensions.Caching.Distributed
 
         public virtual void Refresh(string key)
         {
+            key = this.EnsureCorrectKey(key);
             try
             {
                 _inner.Refresh(key);
@@ -159,6 +166,7 @@ namespace Community.Extensions.Caching.Distributed
 
         public virtual async Task RefreshAsync(string key, CancellationToken token = new CancellationToken())
         {
+            key = this.EnsureCorrectKey(key);
             try
             {
                 await _inner.RefreshAsync(key, token);
@@ -178,6 +186,7 @@ namespace Community.Extensions.Caching.Distributed
 
         public virtual void Remove(string key)
         {
+            key = this.EnsureCorrectKey(key);
             try
             {
                 _inner.Remove(key);
@@ -197,6 +206,7 @@ namespace Community.Extensions.Caching.Distributed
 
         public virtual async Task RemoveAsync(string key, CancellationToken token = new CancellationToken())
         {
+            key = this.EnsureCorrectKey(key);
             try
             {
                 await _inner.RemoveAsync(key, token);
