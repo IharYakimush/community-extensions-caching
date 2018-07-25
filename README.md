@@ -1,6 +1,6 @@
 # Combine memory and distributed caches
-Standard version of `IMemoryCache` and `IDistributedCache` from `Microsoft.Extensions.Caching` allows to register only 1 instance in `IServicesCollection`. 
-This package allows you to:
+Standard version of `IMemoryCache` and `IDistributedCache` from `Microsoft.Extensions.Caching` allows to register only 1 instance in `IServiceCollection`. 
+This project allows you to:
  - Use generic versions of `IMemoryCache<T>` and `IDistributedCache<T>` to be able to manage your cache instances
  - Work with strongly typed objects in `IDistributedCache<T>` instead of `byte[]`
  - Use `ICombinedCache<T>` combined cache which try to get value from `IMemoryCache<T>` first and perform fallback to `IDistributedCache<T>`
