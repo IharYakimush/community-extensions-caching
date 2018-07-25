@@ -37,18 +37,20 @@ namespace Community.Extensions.Caching.Common
 
         public static Func<Type, Type, string, string> FinalKeyFactory { get; } = (t1, t2, key) =>
         {
-            return
-                $"{Hashes.GetOrAdd(t1, GetHash)}_{Hashes.GetOrAdd(t2, GetHash)}_{key}";
+            return $"{Hashes.GetOrAdd(t1, GetHash)}_{Hashes.GetOrAdd(t2, GetHash)}_{key}";
         };
 
         public static Func<Type, string, string> FinalKeyFactoryForCacheInstance { get; } = (t1, key) =>
         {
-            return
-                $"{Hashes.GetOrAdd(t1, GetHash)}_{key}";
+            return $"{Hashes.GetOrAdd(t1, GetHash)}_{key}";
         };
 
         public static Func<object, byte[]> Serializer { get; } = obj =>
         {
+            if (obj.GetType() == typeof(byte[]))
+            {
+                return obj as byte[];
+            }
             BinaryFormatter formatter = new BinaryFormatter();
             using (MemoryStream ms = new MemoryStream())
             {
@@ -58,12 +60,16 @@ namespace Community.Extensions.Caching.Common
             }
         };
 
-        public static Func<byte[], object> Deserializer { get; } = data =>
+        public static Func<byte[], Type, object> Deserializer { get; } = (data, type) =>
         {
+            if (type == typeof(byte[]))
+            {
+                return data;
+            }
             BinaryFormatter formatter = new BinaryFormatter();
             using (MemoryStream ms = new MemoryStream(data))
             {
-                return formatter.Deserialize(ms);                
+                return formatter.Deserialize(ms);
             }
         };
     }

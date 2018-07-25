@@ -224,7 +224,7 @@ namespace Community.Extensions.Caching.Distributed
             }   
         }
 
-        private TObject HandleGet<TObject>(byte[] data, Func<byte[], object> deserialize)
+        private TObject HandleGet<TObject>(byte[] data, Func<byte[], Type, object> deserialize)
             where TObject : class
         {
             if (data == null)
@@ -232,12 +232,17 @@ namespace Community.Extensions.Caching.Distributed
                 return default(TObject);
             }
 
-            if (deserialize != null)
+            if (typeof(TObject) == typeof(byte[]))
             {
-                return (TObject)deserialize(data);
+                return data as TObject;
             }
 
-            return (TObject)Defaults.Deserializer(data);
+            if (deserialize != null)
+            {
+                return (TObject) deserialize(data, typeof(TObject));
+            }
+
+            return (TObject) Defaults.Deserializer(data, typeof(TObject));
         }
 
         private byte[] HandleSet<TObject>(TObject value, Func<object, byte[]> serialize)
@@ -246,6 +251,11 @@ namespace Community.Extensions.Caching.Distributed
             if (value == null)
             {
                 throw new ArgumentNullException(nameof(value));
+            }
+
+            if (typeof(TObject) == typeof(byte[]))
+            {
+                return value as byte[];
             }
 
             if (serialize != null)

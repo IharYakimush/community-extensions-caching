@@ -11,9 +11,9 @@
     <PackageProjectUrl>https://github.com/IharYakimush/community-extensions-caching</PackageProjectUrl>
     <PackageTags>redis cache</PackageTags>
     <Description>Redis distributed cache inplementation of IDistributedCache&lt;T&gt;</Description>
-    <AssemblyVersion>2.0.1.0</AssemblyVersion>
-    <FileVersion>2.0.1.0</FileVersion>
-    <Version>2.0.1</Version>
+    <AssemblyVersion>2.0.2.0</AssemblyVersion>
+    <FileVersion>2.0.2.0</FileVersion>
+    <Version>2.0.2</Version>
   </PropertyGroup>
 
   <ItemGroup>

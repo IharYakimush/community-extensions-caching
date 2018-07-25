@@ -13,7 +13,7 @@ namespace Community.Extensions.Caching.Distributed
         public IDistributedCache Inner { get; }
         public DistributedCacheEntryOptions DefaultCacheEntryOptions { get; } = Defaults.DistributedCacheEntryOptions;
         public Func<object, byte[]> Serializer { get; set; } = Defaults.Serializer;
-        public Func<byte[], object> Deserializer { get; set; } = Defaults.Deserializer;
+        public Func<byte[],Type, object> Deserializer { get; set; } = Defaults.Deserializer;
 
         public bool HandleGetErrors { get; set; } = false;
         public bool HandleSetErrors { get; set; } = false;
