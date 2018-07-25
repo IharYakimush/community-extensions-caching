@@ -71,7 +71,7 @@ public class ValuesController : ControllerBase
 ### Sample project
 https://github.com/IharYakimush/community-extensions-caching/tree/master/Community.Extensions.Caching.Sample
 
-#NuGet
+# NuGet
  - Base abstractions and memory cache: https://www.nuget.org/packages/Community.Extensions.Caching/
  - Redis distributed cache: https://www.nuget.org/packages/Community.Extensions.Caching.Redis/
  - App.Metrics for caches: https://www.nuget.org/packages/Community.Extensions.Caching.AppMetrics/
