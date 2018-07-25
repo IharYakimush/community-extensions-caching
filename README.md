@@ -2,7 +2,7 @@
 Standard version of `IMemoryCache` and `IDistributedCache` from `Microsoft.Extensions.Caching` allows to register only 1 instance in `IServiceCollection`. 
 This project allows you to:
  - Use generic versions of `IMemoryCache<T>` and `IDistributedCache<T>` to be able to manage multiple cache instances
- - Use strongly typed objects with IDistributedCache<T> instead of byte arrays
+ - Use strongly typed objects with `IDistributedCache<T>` instead of byte arrays
  - Use `ICombinedCache<T>` combined cache which try to get value from memory cache first and perform fallback to distributed cache
  - Use App.Metrics to monitor cache hit ration and performance
 
