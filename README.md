@@ -1,4 +1,4 @@
-# community-extensions-caching
+# Combine memory and distributed caches
 Standard version of `IMemoryCache` and `IDistributedCache` from `Microsoft.Extensions.Caching` allows to register only 1 instance in `IServicesCollection`. 
 This package allows you to:
  - Use generic versions of `IMemoryCache<T>` and `IDistributedCache<T>` to be able to manage your cache instances
@@ -41,7 +41,6 @@ public class ValuesController : ControllerBase
     private readonly IMemoryCache<MyCache> mem;
     private readonly IDistributedCache<MyCache> dist;
     private readonly ICombinedCache<MyCache> comb;
-    private readonly Random rnd = new Random();
 
     public ValuesController(
         IMemoryCache<MyCache> onlyMemoryCache,
@@ -73,4 +72,6 @@ public class ValuesController : ControllerBase
 https://github.com/IharYakimush/community-extensions-caching/tree/master/Community.Extensions.Caching.Sample
 
 #NuGet
-Base abstractions and memory cache:
+ - Base abstractions and memory cache: https://www.nuget.org/packages/Community.Extensions.Caching/
+ - Redis distributed cache: https://www.nuget.org/packages/Community.Extensions.Caching.Redis/
+ - App.Metrics for caches: https://www.nuget.org/packages/Community.Extensions.Caching.AppMetrics/
