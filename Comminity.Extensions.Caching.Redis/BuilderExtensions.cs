@@ -1,21 +1,26 @@
 ﻿using Microsoft.Extensions.Caching.Redis;
 using Microsoft.Extensions.Options;
 using System;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Comminity.Extensions.Caching.Redis
 {
     public static class BuilderExtensions
     {
-        public static CombinedCacheOptions<TCacheInstance> AddRedisDistributedCache<TCacheInstance>(this CombinedCacheOptions<TCacheInstance> options, RedisCacheOptions redisCacheOptions)
+        public static IServiceCollection AddRedisDistributedCache<TCacheInstance>(this IServiceCollection services, Action<RedisCacheOptions> setupInner = null,Action<DistributedCacheOptions<TCacheInstance>> setup = null)
         {
-            if (redisCacheOptions == null)
-            {
-                throw new ArgumentNullException(nameof(redisCacheOptions));
-            }
+            RedisCacheOptions innerOptions = new RedisCacheOptions();
+            setupInner?.Invoke(innerOptions);
 
-            options.DistributedCache = new RedisCache(Options.Create(redisCacheOptions));
+            DistributedCacheOptions<TCacheInstance> options = new DistributedCacheOptions<TCacheInstance>(new RedisCache(Options.Create(innerOptions)));
+            setup?.Invoke(options);
 
-            return options;
+            services.TryAddSingleton(options);
+            services.TryAddSingleton<IDistributedCache<TCacheInstance>, DistributedCache<TCacheInstance>>();
+
+            return services;
         }
     }
 }

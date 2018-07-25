@@ -41,6 +41,12 @@ namespace Comminity.Extensions.Caching
                 $"{Hashes.GetOrAdd(t1, GetHash)}_{Hashes.GetOrAdd(t2, GetHash)}_{key}";
         };
 
+        public static Func<Type, string, string> FinalKeyFactoryForCacheInstance { get; } = (t1, key) =>
+        {
+            return
+                $"{Hashes.GetOrAdd(t1, GetHash)}_{key}";
+        };
+
         public static Func<object, byte[]> Serializer { get; } = obj =>
         {
             BinaryFormatter formatter = new BinaryFormatter();

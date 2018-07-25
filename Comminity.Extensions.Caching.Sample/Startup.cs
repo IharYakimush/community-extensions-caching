@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Comminity.Extensions.Caching.AppMetrics;
-using Comminity.Extensions.Caching.Memory;
 using Comminity.Extensions.Caching.Redis;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,11 +15,8 @@ using Microsoft.Extensions.Caching.Redis;
 
 namespace Comminity.Extensions.Caching.Sample
 {
-    public class OnlyMemory { }
+    public class MyCache { }
 
-    public class OnlyDistributed { }
-
-    public class Combined { }
 
     public class Startup
     {
@@ -34,11 +30,16 @@ namespace Comminity.Extensions.Caching.Sample
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddCombinedCache<Combined>(options =>
+            services.AddMemoryCache<MyCache>().AddMetricsToMemoryCache<MyCache>();
+
+            services.AddRedisDistributedCache<MyCache>(options =>
             {
-                options.AddDefaultMemoryCache();
-                options.AddRedisDistributedCache(new RedisCacheOptions() { InstanceName = "redis", Configuration = "redis" });
-            });
+                options.Configuration = "redis";
+                options.InstanceName = "redis";
+            }).AddMetricsToDistributedCache<MyCache>();
+
+            services.AddCombinedCache<MyCache>();
+
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
         }
 

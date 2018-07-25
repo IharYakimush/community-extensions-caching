@@ -9,11 +9,12 @@ namespace Comminity.Extensions.Caching.AppMetrics
     public class MemoryCacheWithMetrics<TCacheInstance> : MemoryCache<TCacheInstance>
     {
         protected MetricsHelper<TCacheInstance> Helper { get; }
-        public MemoryCacheWithMetrics(IMemoryCache inner, IMetrics metrics, CacheMetrics allowedMetrics)
-            : base(inner)
+
+        public MemoryCacheWithMetrics(MemoryCacheOptions<TCacheInstance> options, IMetrics metrics,
+           AllowedMetrics<MemoryCacheWithMetrics<TCacheInstance>> settings) : base(options)
         {
-            this.Helper = new MetricsHelper<TCacheInstance>(metrics, allowedMetrics);
-            if (allowedMetrics.HasFlag(CacheMetrics.HitRatio))
+            this.Helper = new MetricsHelper<TCacheInstance>(metrics, settings.AllowedCacheMetrics);
+            if (settings.AllowedCacheMetrics.HasFlag(CacheMetrics.HitRatio))
             {
                 this.Helper.MetricsObj.RegisterOneMinuteRate(
                     Metrics.Memory.HitRatio,
@@ -22,13 +23,13 @@ namespace Comminity.Extensions.Caching.AppMetrics
             }
         }
 
-        public override bool TryGetValue(object key, out object value)
+        public override TObject GetValue<TObject>(string key)
         {
-            bool result = base.TryGetValue(key, out value);
-
             this.Helper.MarkTotalCount(Metrics.Memory.TotalCount);
+
+            TObject result = base.GetValue<TObject>(key);            
             
-            if (result)
+            if (result != null)
             {
                 this.Helper.MarkHitCount(Metrics.Memory.HitCount);
             }
@@ -36,12 +37,12 @@ namespace Comminity.Extensions.Caching.AppMetrics
             return result;
         }
 
-        public override Task<TResult> GetOrAddAsync<TResult>(
+        public override async Task<TObject> GetOrSetValueAsync<TObject>(
             string key,
-            Func<Task<TResult>> factory,
-            MemoryCacheEntryOptions options)
+            Func<Task<TObject>> factory,
+            MemoryCacheEntryOptions options = null)
         {
-            Func<Task<TResult>> factoryWithMeasurement = factory;
+            Func<Task<TObject>> factoryWithMeasurement = factory;
 
             if (this.Helper.AllowedMetrics.HasFlag(CacheMetrics.FactoryTime))
             {
@@ -54,7 +55,28 @@ namespace Comminity.Extensions.Caching.AppMetrics
                 };
             }
 
-            return base.GetOrAddAsync(key, factoryWithMeasurement, options);
+            return await base.GetOrSetValueAsync(key, factoryWithMeasurement, options);
+        }
+
+        public override TObject GetOrSetValue<TObject>(
+            string key,
+            Func<TObject> factory,
+            MemoryCacheEntryOptions options = null)
+        {
+            Func<TObject> factoryWithMeasurement = factory;
+
+            if (this.Helper.AllowedMetrics.HasFlag(CacheMetrics.FactoryTime))
+            {
+                factoryWithMeasurement = () =>
+                {
+                    using (var timer = this.Helper.GetFactoryTimer(Metrics.Memory.FactoryTimer))
+                    {
+                        return factory();
+                    }
+                };
+            }
+
+            return base.GetOrSetValue(key, factoryWithMeasurement, options);
         }
     }
 }

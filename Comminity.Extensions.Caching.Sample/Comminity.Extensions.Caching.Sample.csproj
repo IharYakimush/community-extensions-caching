@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Comminity.Extensions.Caching.AppMetrics\Comminity.Extensions.Caching.AppMetrics.csproj" />
-    <ProjectReference Include="..\Comminity.Extensions.Caching.Memory\Comminity.Extensions.Caching.Memory.csproj" />
     <ProjectReference Include="..\Comminity.Extensions.Caching.Redis\Comminity.Extensions.Caching.Redis.csproj" />
   </ItemGroup>
 

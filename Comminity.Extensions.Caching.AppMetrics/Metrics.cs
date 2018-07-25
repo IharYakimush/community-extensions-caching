@@ -106,6 +106,15 @@ namespace Comminity.Extensions.Caching.AppMetrics
                 Context = "Cache.Distributed",
                 Name = "t_count"
             };
+
+            public static TimerOptions FactoryTimer { get; } =
+                new TimerOptions
+                {
+                    Name = "f_time",
+                    MeasurementUnit = Unit.Requests,
+                    RateUnit = TimeUnit.Milliseconds,
+                    Context = "Cache.Distributed"
+                };
         }
 
         public static class Memory
@@ -139,71 +148,6 @@ namespace Comminity.Extensions.Caching.AppMetrics
                     RateUnit = TimeUnit.Milliseconds,
                     Context = "Cache.Memory"
                 };
-        }
-
-        public static class DistributedObject
-        {
-            public static TimerOptions ReadTimer { get; } =
-                new TimerOptions
-                {
-                    Name = "r_time",
-                    MeasurementUnit = Unit.Requests,
-                    RateUnit = TimeUnit.Milliseconds,
-                    Context = "Cache.DistributedObject"
-                };
-
-            public static TimerOptions WriteTimer { get; } =
-                new TimerOptions
-                {
-                    Name = "w_time",
-                    MeasurementUnit = Unit.Requests,
-                    RateUnit = TimeUnit.Milliseconds,
-                    Context = "Cache.DistributedObject"
-                };
-
-            public static TimerOptions FactoryTimer { get; } =
-                new TimerOptions
-                {
-                    Name = "f_time",
-                    MeasurementUnit = Unit.Requests,
-                    RateUnit = TimeUnit.Milliseconds,
-                    Context = "Cache.DistributedObject"
-                };
-
-            public static MeterOptions HitCount { get; } = new MeterOptions
-            {
-                MeasurementUnit = Unit.Calls,
-                Context = "Cache.DistributedObject",
-                Name = "h_count"
-            };
-
-            public static GaugeOptions HitRatio { get; } = new GaugeOptions
-            {
-                MeasurementUnit = Unit.Calls,
-                Context = "Cache.DistributedObject",
-                Name = "h_ratio"
-            };
-
-            public static MeterOptions ErrorCount { get; } = new MeterOptions
-            {
-                MeasurementUnit = Unit.Calls,
-                Context = "Cache.DistributedObject",
-                Name = "e_count"
-            };
-
-            public static GaugeOptions ErrorRatio { get; } = new GaugeOptions
-            {
-                MeasurementUnit = Unit.Calls,
-                Context = "Cache.DistributedObject",
-                Name = "e_ratio"
-            };
-
-            public static MeterOptions TotalCount { get; } = new MeterOptions
-            {
-                MeasurementUnit = Unit.Calls,
-                Context = "Cache.DistributedObject",
-                Name = "t_count"
-            };
-        }
+        }        
     }
 }
