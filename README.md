@@ -71,6 +71,9 @@ public class ValuesController : ControllerBase
 ### Sample project
 https://github.com/IharYakimush/community-extensions-caching/tree/master/Community.Extensions.Caching.Sample
 
+# Grafana Dashboard
+Grafana dashboard for InfluxDB available at https://github.com/IharYakimush/community-extensions-caching/tree/master/GrafanaDashbord.json
+
 # NuGet
  - Base abstractions and memory cache: https://www.nuget.org/packages/Community.Extensions.Caching/
  - Redis distributed cache: https://www.nuget.org/packages/Community.Extensions.Caching.Redis/
